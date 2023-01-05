@@ -6,7 +6,7 @@ const App = () => {
     const [pilots, setPilots] = useState([])
     const [filter, setFilter] = useState([])
 
-    //fetche newest pilot information every 2 seconds
+    //fetch newest pilot information every 2 seconds
     useEffect(() => {
         setInterval(() => {
             const fetchData = async () => {
@@ -21,6 +21,7 @@ const App = () => {
         setFilter(event.target.value)
     }
 
+    //show pilots based on filter string that user can write on the search bar
     const pilotsToShow = filter.length === 0 ? pilots : pilots.filter(p => (`${p.firstName.toLowerCase()} ${p.lastName.toLowerCase()}`).indexOf(filter.toLowerCase()) > -1)
 
     return (
