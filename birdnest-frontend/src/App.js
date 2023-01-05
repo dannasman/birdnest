@@ -18,6 +18,7 @@ const App = () => {
     }, [])
 
     const handleFilterStringChange = (event) => {
+        event.preventDefault()
         setFilter(event.target.value)
     }
 

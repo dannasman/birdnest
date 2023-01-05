@@ -86,7 +86,7 @@ const job = schedule.scheduleJob("*/2 * * * * *", async () => {
             distance: (up.distance < oldInfo.find(o => o.pilotId.toString() === up.pilotId.toString()).distance) ? up.distance : oldInfo.find(o => o.pilotId.toString() === up.pilotId.toString()).distance,
             timeDetected: oldInfo.find(o => o.pilotId.toString() === up.pilotId.toString()).timeDetected,
         }))
-    
+
     await Pilot.deleteMany({ pilotId: { $in: updatedPilots.map(up => up.pilotId) } }) //delete the old documents that have been updated
     await Pilot.create(newPilots.concat(updatedPilots)) // add new and updated pilots to db
 
