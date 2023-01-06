@@ -3,12 +3,16 @@ const schedule = require('node-schedule')
 const xml2js = require('xml2js')
 const axios = require('axios').default
 const express = require('express')
+const http = require('http')
 const mongoose = require('mongoose')
+const { Server } = require("socket.io");
 
 const Pilot = require('./models/pilots')
 
 const app = express()
 app.use(express.static('build'))
+const server = http.createServer(app)
+const io = new Server(server)
 
 //connect to mongodb
 mongoose.connect(process.env.MONGODB_URI)
@@ -81,8 +85,6 @@ const job = schedule.scheduleJob("*/2 * * * * *", async () => {
     const updatedPilots = fetchedPilots.filter(fp => oldPilots.map(op => op.pilotId).includes(fp.pilotId))
         .map(up => ({
             ...up,
-            positionX: (up.distance < oldInfo.find(o => o.pilotId.toString() === up.pilotId.toString()).distance) ? up.positionX : oldInfo.find(o => o.pilotId.toString() === up.pilotId.toString()).positionX,
-            positionY: (up.distance < oldInfo.find(o => o.pilotId.toString() === up.pilotId.toString()).distance) ? up.positionY : oldInfo.find(o => o.pilotId.toString() === up.pilotId.toString()).positionY,
             distance: (up.distance < oldInfo.find(o => o.pilotId.toString() === up.pilotId.toString()).distance) ? up.distance : oldInfo.find(o => o.pilotId.toString() === up.pilotId.toString()).distance,
             timeDetected: oldInfo.find(o => o.pilotId.toString() === up.pilotId.toString()).timeDetected,
         }))
@@ -94,13 +96,21 @@ const job = schedule.scheduleJob("*/2 * * * * *", async () => {
 
 })
 
-//return all pilots that have violated the NDZ within the last 10min
+//return all pilots that have violated the NDZ within the last 10min, not used by the frontend atm
 app.get('/pilots', async (req, res) => {
     const pilots = await Pilot.find({})
     res.json(pilots)
 })
 
+//listen to 'connection' event and emit pilot data to connected sockets every 2 seconds
+io.on('connection', (socket) => {
+    setInterval(async () => {
+        const pilots = await Pilot.find({})
+        io.emit('pilot information', pilots)
+    }, 2000)
+})
+
 const PORT = process.env.PORT || 8080
-app.listen(PORT, () => {
+server.listen(PORT, () => {
     console.log(`Server running on port ${PORT}`)
 })

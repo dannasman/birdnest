@@ -1,6 +1,9 @@
 import React, { useState, useEffect } from 'react'
+import io from 'socket.io-client';
 import Map from './components/Map'
-import pilotService from './services/pilots'
+
+//initialize socket
+const socket = io();
 
 const App = () => {
     const [pilots, setPilots] = useState([])
@@ -8,15 +11,16 @@ const App = () => {
 
     //fetch newest pilot information every 2 seconds
     useEffect(() => {
-        setInterval(() => {
-            const fetchData = async () => {
-                const pilots = await pilotService.getAll()
-                setPilots(pilots)
-            }
-            fetchData()
-        }, 2000)
+        const updatePilots = (updatedPilots) => setPilots(updatedPilots)
+
+        //listen for 'pilot information' event and update pilots state on capture 
+        socket.on('pilot information', updatePilots)
+        return () => {
+            socket.off('pilot information', updatePilots)
+        }
     }, [])
 
+    //update filter string when text in the input field changes
     const handleFilterStringChange = (event) => {
         event.preventDefault()
         setFilter(event.target.value)
@@ -28,6 +32,7 @@ const App = () => {
     return (
         <div>
             <Map pilots={pilotsToShow}></Map>
+            <p>The circle above represents the NDZ and displays the latest locations of the violators in the NDZ for the past 10 minutes</p>
             Search pilots <input value={filter} onChange={handleFilterStringChange} ></input>
             <ul>
                 {pilotsToShow.map(p =>
