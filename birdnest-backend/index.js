@@ -15,7 +15,7 @@ const server = http.createServer(app)
 const io = new Server(server)
 
 //connect to mongodb
-mongoose.connect(process.env.MONGODB_URI_TEST)
+mongoose.connect(process.env.MONGODB_URI)
     .then(result => {
         console.log('connected to MongoDB')
     })
