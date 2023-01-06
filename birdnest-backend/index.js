@@ -15,7 +15,7 @@ const server = http.createServer(app)
 const io = new Server(server)
 
 //connect to mongodb
-mongoose.connect(process.env.MONGODB_URI)
+mongoose.connect(process.env.MONGODB_URI_TEST)
     .then(result => {
         console.log('connected to MongoDB')
     })
@@ -86,7 +86,7 @@ const job = schedule.scheduleJob("*/2 * * * * *", async () => {
         .map(up => ({
             ...up,
             distance: (up.distance < oldInfo.find(o => o.pilotId.toString() === up.pilotId.toString()).distance) ? up.distance : oldInfo.find(o => o.pilotId.toString() === up.pilotId.toString()).distance,
-            timeDetected: oldInfo.find(o => o.pilotId.toString() === up.pilotId.toString()).timeDetected,
+            timeDetected: up.timeDetected,
         }))
 
     await Pilot.deleteMany({ pilotId: { $in: updatedPilots.map(up => up.pilotId) } }) //delete the old documents that have been updated
